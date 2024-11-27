@@ -30,4 +30,7 @@ jobs:
           curl -X POST "https://api.render.com/deploy/sync" \
             -H "Authorization: Bearer $RENDER_API_KEY" \
             -d "serviceId=your-service-id"
-
+      - name: Déployer sur Render
+        run: |
+          # Commande pour déployer sur Render (par exemple, avec le CLI Render)
+          render deploy
