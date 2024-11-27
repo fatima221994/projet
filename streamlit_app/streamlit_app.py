@@ -11,8 +11,8 @@ port = os.getenv("PORT", "8501")
 st.write(f"App is running on port {port}")
 
 # URL de l'API déployée
-API_URL = 'http://127.0.0.1:5005/predict'  # Remplacez par l'URL de votre API Flask
-
+#API_URL = 'http://127.0.0.1:5005/predict'  # Remplacez par l'URL de votre API Flask
+API_URL = 'https://project-science-free-014cfbe31914.herokuapp.com/'  # Remplacez par l'URL de votre API Flask
 # Charger les données de test ou des exemples de clients
 #df = pd.read_csv('/api/data/application_test.csv')  # Remplacez par le chemin de votre fichier CSV
 
@@ -100,5 +100,5 @@ if st.button('Faire la prédiction'):
         st.write(f"Erreur lors de la requête API : {str(e)}")
 
 # Lancer Streamlit en écoutant sur le port correct
-if __name__ == "__main__":
-    st.run(port=port)
+#if __name__ == "__main__":
+    #st.run(port=port)
