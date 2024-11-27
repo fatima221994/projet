@@ -3,21 +3,16 @@ import joblib
 import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix
-from flask_cors import CORS
-import pickle
+from sklearn.metrics import make_scorer
 
-# Initialisation de l'application Flask
 app = Flask(__name__)
 
-# Ajouter CORS à votre application Flask
-CORS(app)
+# Charger le modèle pré-entrainé (remplacez par le chemin de votre modèle)
+model = joblib.load('/home/machou/openclassroom/projet/models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl')  # Assurez-vous que le modèle est déjà sauvegardé en utilisant joblib
+# Charger le préprocesseur (si vous en avez un)
+preprocessor = joblib.load('/home/machou/openclassroom/projet/models/preprocessor.pkl')
 
-# Charger le modèle et le préprocesseur
-with open('models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl', 'rb') as f:
-    model = pickle.load(f)
 
-with open('models/preprocessor.pkl', 'rb') as f:
-    preprocessor = pickle.load(f)    
 
 
 
