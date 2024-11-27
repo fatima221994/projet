@@ -29,5 +29,5 @@ jobs:
         run: |
           curl -X POST "https://api.render.com/deploy/sync" \
             -H "Authorization: Bearer $RENDER_API_KEY" \
-            -d "serviceId=srv-ct3lfpdumphs73dv9sk0?key=VkKA2AjykO8"
+            -d "serviceId=your-service-id"
       
