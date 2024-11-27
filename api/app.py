@@ -5,6 +5,7 @@ import pandas as pd
 from sklearn.metrics import confusion_matrix
 from flask_cors import CORS
 import pickle
+from sklearn.preprocessing import LabelEncoder
 
 # Initialisation de l'application Flask
 app = Flask(__name__)
@@ -63,10 +64,22 @@ def preprocess_data(data):
         'INSTALLMENTS_NUM_INSTALMENT_NUMBER', 'income_credit_ratio', 'age', 'years_employed', 'log_AMT_INCOME_TOTAL',
         'annuity_income_ratio', 'log_AMT_CREDIT', 'is_employed', 'credit_income_ratio', 'debt_to_income_ratio'
     ]
+    # Apply label encoding to categorical columns
+    categorical_columns = ['NAME_CONTRACT_TYPE', 'CODE_GENDER', 'NAME_INCOME_TYPE', 'NAME_EDUCATION_TYPE', 'NAME_FAMILY_STATUS']  # List of categorical columns
+    le = LabelEncoder()
     
-    df = pd.DataFrame([data], columns=expected_columns)
+    for col in categorical_columns:
+        if col in df.columns:
+            df[col] = le.fit_transform(df[col])
     
+    # Return the processed DataFrame
     return df
+
+
+
+   # df = pd.DataFrame([data], columns=expected_columns)
+    
+   # return df
 
 
 # Fonction de coût métier (10 * FN + FP)
