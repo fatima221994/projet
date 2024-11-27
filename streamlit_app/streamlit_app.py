@@ -2,12 +2,16 @@ import streamlit as st
 import pandas as pd
 import requests
 import numpy as np
+# Définir le port à partir de la variable d'environnement de Heroku
+port = os.getenv("PORT", "8501")
+
+st.write(f"App is running on port {port}")
 
 # URL de l'API déployée
 API_URL = 'http://127.0.0.1:5005/predict'  # Remplacez par l'URL de votre API Flask
 
 # Charger les données de test ou des exemples de clients
-df = pd.read_csv('/home/machou/openclassroom/mlflow_project/data/application_test.csv')  # Remplacez par le chemin de votre fichier CSV
+df = pd.read_csv('/api/data/application_test.csv')  # Remplacez par le chemin de votre fichier CSV
 
 # Liste des clients
 clients = df['SK_ID_CURR'].tolist()
