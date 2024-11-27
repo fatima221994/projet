@@ -1,6 +1,6 @@
 import unittest
 import json
-from app.app import app  # Assurez-vous que l'importation correspond à votre application
+from api.app import app  # Assurez-vous que l'importation correspond à votre application
 
 class TestApp(unittest.TestCase):
     def setUp(self):
