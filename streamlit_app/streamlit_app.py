@@ -14,7 +14,20 @@ st.write(f"App is running on port {port}")
 API_URL = 'http://127.0.0.1:5005/predict'  # Remplacez par l'URL de votre API Flask
 
 # Charger les données de test ou des exemples de clients
-df = pd.read_csv('/api/data/application_test.csv')  # Remplacez par le chemin de votre fichier CSV
+#df = pd.read_csv('/api/data/application_test.csv')  # Remplacez par le chemin de votre fichier CSV
+
+# Obtenez le répertoire de travail actuel
+current_dir = os.getcwd()
+print(f"Répertoire actuel : {current_dir}")
+
+# Spécifiez le chemin absolu
+file_path = os.path.join(current_dir, 'api', 'data', 'application_test.csv')
+
+if os.path.exists(file_path):
+    df = pd.read_csv(file_path)
+    print("Fichier chargé avec succès.")
+else:
+    print(f"Le fichier {file_path} est introuvable.")
 
 # Liste des clients
 clients = df['SK_ID_CURR'].tolist()
