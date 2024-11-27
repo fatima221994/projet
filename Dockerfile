@@ -11,16 +11,16 @@ RUN apt-get update && apt-get install -y \
     python3-dev
 
 # Définir le répertoire de travail
-WORKDIR /app
+WORKDIR /api
 
 # Copier d'abord les fichiers nécessaires à l'installation des dépendances
-COPY requirements.txt /app/
+COPY requirements.txt /api/
 
 # Installer les dépendances Python
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copier le reste de l'application dans le conteneur
-COPY . /app/
+COPY . /ap/
 
 # Exposer le port 5005 pour Flask
 EXPOSE 5005
