@@ -7,7 +7,7 @@ import numpy as np
 API_URL = 'http://127.0.0.1:5005/predict'  # Remplacez par l'URL de votre API Flask
 
 # Charger les données de test (application_test.csv) depuis un chemin local
-df = pd.read_csv('/home/machou/openclassroom/projet/api/data/application_test.csv')  # Remplacez par le chemin correct du fichier
+df = pd.read_csv('/projet/api/data/application_test.csv')  # Remplacez par le chemin correct du fichier
 
 # Liste des clients disponibles dans le fichier CSV
 clients = df['SK_ID_CURR'].tolist()

@@ -8,9 +8,9 @@ from sklearn.metrics import make_scorer
 app = Flask(__name__)
 
 # Charger le modèle pré-entrainé (remplacez par le chemin de votre modèle)
-model = joblib.load('/home/machou/openclassroom/projet/models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl')  # Assurez-vous que le modèle est déjà sauvegardé en utilisant joblib
+model = joblib.load('/projet/models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl')  # Assurez-vous que le modèle est déjà sauvegardé en utilisant joblib
 # Charger le préprocesseur (si vous en avez un)
-preprocessor = joblib.load('/home/machou/openclassroom/projet/models/preprocessor.pkl')
+preprocessor = joblib.load('/projet/models/preprocessor.pkl')
 
 
 
