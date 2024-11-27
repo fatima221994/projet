@@ -4,9 +4,9 @@ services:
     env: python
     plan: free
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn app:app --bind 127.0.0.1:5005"
+    startCommand: "gunicorn app:app --bind 0.0.0.0:5005"  # Utiliser 0.0.0.0 pour Render
     envVars:
       - key: FLASK_ENV
         value: production
-    dockerfilePath: ./Dockerfile  # Pointage vers le Dockerfile dans votre projet
+    dockerfilePath: ./Dockerfile  # Assurez-vous que ce chemin est correct
 
