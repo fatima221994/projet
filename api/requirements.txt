@@ -8,5 +8,5 @@ gunicorn==20.1.0
 pandas==1.3.3
 imblearn==0.0
 category_encoders==2.5.0
-xgboost==1.7.0
+xgboost==1.6.2  # Utiliser une version compatible pour Python 3.9
 joblib==1.2.0
