@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
 # Définir le répertoire de travail
 WORKDIR /app
 
-# Copier le fichier requirements.txt
+# Copier d'abord les fichiers nécessaires à l'installation des dépendances
 COPY requirements.txt /app/
 
 # Installer les dépendances Python
@@ -22,10 +22,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copier le reste de l'application dans le conteneur
 COPY . /app/
 
-
-# Exposer le port 5000 pour Flask
+# Exposer le port 5005 pour Flask
 EXPOSE 5005
 
 # Commande pour démarrer l'application Flask avec gunicorn
-CMD ["gunicorn", "app:app", "--bind", "127.0.0.1:5005"]
+# Utiliser 0.0.0.0 pour que l'application soit accessible de l'extérieur du conteneur
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:5005"]
 
