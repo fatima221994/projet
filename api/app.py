@@ -7,10 +7,21 @@ from sklearn.metrics import make_scorer
 
 app = Flask(__name__)
 
+
+import pickle
+
+with open('models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl', 'rb') as f:
+    model = pickle.load(f)
+
+import pickle
+
+with open('models/preprocessor.pkl', 'rb') as f:
+    preprocessor = pickle.load(f)    
+
 # Charger le modèle pré-entrainé (remplacez par le chemin de votre modèle)
-model = joblib.load('models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl')  # Assurez-vous que le modèle est déjà sauvegardé en utilisant joblib
+#model = joblib.load('models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl')  # Assurez-vous que le modèle est déjà sauvegardé en utilisant joblib
 # Charger le préprocesseur (si vous en avez un)
-preprocessor = joblib.load('models/preprocessor.pkl')
+#preprocessor = joblib.load('models/preprocessor.pkl')
 
 
 
