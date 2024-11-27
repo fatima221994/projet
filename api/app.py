@@ -3,34 +3,21 @@ import joblib
 import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix
-from sklearn.metrics import make_scorer
 from flask_cors import CORS
-
-# Ajoutez CORS à votre application Flask
-app = Flask(__name__)
-CORS(app)
-
-
-
-
 import pickle
 
+# Initialisation de l'application Flask
+app = Flask(__name__)
+
+# Ajouter CORS à votre application Flask
+CORS(app, resources={r"/predict": {"origins": "*"}})
+
+# Charger le modèle et le préprocesseur
 with open('models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl', 'rb') as f:
     model = pickle.load(f)
 
-import pickle
-
 with open('models/preprocessor.pkl', 'rb') as f:
     preprocessor = pickle.load(f)    
-
-# Charger le modèle pré-entrainé (remplacez par le chemin de votre modèle)
-#model = joblib.load('models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl')  # Assurez-vous que le modèle est déjà sauvegardé en utilisant joblib
-# Charger le préprocesseur (si vous en avez un)
-#preprocessor = joblib.load('models/preprocessor.pkl')
-
-
-
-
 
 # Fonction pour transformer les données entrantes
 def preprocess_data(data):
@@ -76,21 +63,32 @@ def preprocess_data(data):
     ]
     
     df = pd.DataFrame([data], columns=expected_columns)
+
+    # Exemple d'encodage des variables catégorielles
+    df['NAME_CONTRACT_TYPE'] = df['NAME_CONTRACT_TYPE'].astype('category').cat.codes
+    df['CODE_GENDER'] = df['CODE_GENDER'].map({'M': 1, 'F': 0})  # Par exemple, 'M' devient 1 et 'F' devient 0
+    df['NAME_INCOME_TYPE'] = df['NAME_INCOME_TYPE'].astype('category').cat.codes
+    df['NAME_FAMILY_STATUS'] = df['NAME_FAMILY_STATUS'].astype('category').cat.codes
+
+    # Convertir les colonnes numériques en valeurs appropriées
+    df['AMT_INCOME_TOTAL'] = pd.to_numeric(df['AMT_INCOME_TOTAL'], errors='coerce')
+    df['AMT_CREDIT'] = pd.to_numeric(df['AMT_CREDIT'], errors='coerce')
+    df['AMT_ANNUITY'] = pd.to_numeric(df['AMT_ANNUITY'], errors='coerce')
+
+    # Remplacer les NaN par 0 ou une valeur par défaut
+    df.fillna(0, inplace=True)
     
     return df
-
 
 # Fonction de coût métier (10 * FN + FP)
 def cost_function(y_true, y_pred_proba, threshold=0.5):
     y_pred_bin = (y_pred_proba >= threshold).astype(int)
     
-    # Calculer la matrice de confusion
     cm = confusion_matrix(y_true, y_pred_bin)
     
     if cm.size == 4:  # Vérifier que la matrice de confusion est bien 2x2
         tn, fp, fn, tp = cm.ravel()
-        # Coût métier : 10 * FN + FP
-        return 10 * fn + fp
+        return 10 * fn + fp  # Coût métier
     else:
         print(f"Avertissement: matrice de confusion invalide: {cm}")
         return 1.0  # Coût métier par défaut
@@ -106,57 +104,32 @@ def predict():
         
         # Effectuer la prédiction des probabilités
         y_pred_proba = model.predict_proba(processed_data)[:, 1]
-
-        print(f"Prediction Probabilities: {y_pred_proba}")  # Debug: afficher les probabilités de prédiction
-
-        # Tester le coût pour chaque seuil
-        for threshold in np.arange(0.0, 1.05, 0.05):
-            y_pred_bin = (y_pred_proba >= threshold).astype(int)
-            cost = cost_function(np.array([0]), y_pred_proba, threshold)
-            print(f"Threshold: {threshold:.2f} - Cost: {cost}")
-        
-        # Utiliser le seuil optimal fourni pour le score métier
-        best_threshold = 0.4000
         
         # Calculer la prédiction binaire en fonction du meilleur seuil
+        best_threshold = 0.4000
         y_pred_bin = (y_pred_proba >= best_threshold).astype(int)
 
         # Calculer la matrice de confusion et le coût métier
-        y_true = np.array([0])  # À ajuster si vous avez les vraies étiquettes dans les données
+        y_true = np.array([0])  # Ajustez cela si vous avez des vraies étiquettes
         cm = confusion_matrix(y_true, y_pred_bin)
+        
         if cm.size == 4:  # Vérifier que la matrice de confusion est bien 2x2
             tn, fp, fn, tp = cm.ravel()
             cost = 10 * fn + fp  # Coût métier
         else:
             tn, fp, fn, tp = 0, 0, 0, 0
-            cost = 1.0  # Coût par défaut en cas de problème avec la matrice de confusion
+            cost = 1.0
         
-        # Retourner les résultats sous forme JSON
-        response = {
-            'prediction': int(y_pred_bin[0]),
+        # Retourner la réponse avec la probabilité de défaut et le coût métier
+        return jsonify({
             'probability': float(y_pred_proba[0]),
-            'best_threshold': float(best_threshold),
-            'cost': float(cost),
-            'cost_details': {
-                'TN': int(tn),
-                'FP': int(fp),
-                'FN': int(fn),
-                'TP': int(tp)
-            },
-            'metrics': {
-                'AUC': 0.7625,
-                'Accuracy': 0.7992,
-                'F1-Score': 0.3039,
-                'Precision': 0.2110,
-                'Recall': 0.5430,
-                'Best Cost Score': -21746.8
-            }
-        }
-        
-        return jsonify(response)
-
+            'prediction': int(y_pred_bin[0]),
+            'cost': cost
+        })
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        print(f"Erreur lors de la prédiction: {e}")
+        return jsonify({'error': 'Erreur lors du traitement des données'}), 500
 
+# Lancer l'application Flask
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5005, debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
