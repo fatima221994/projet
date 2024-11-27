@@ -1,20 +1,20 @@
-# Utilisation de l'image officielle Python
+## Utilisation de l'image Python officielle comme base
 FROM python:3.9-slim
 
-# Définir le répertoire de travail dans le conteneur
+# Définir le répertoire de travail
 WORKDIR /app
 
-# Copier les fichiers nécessaires dans le conteneur
+# Copier le fichier requirements.txt dans le conteneur
 COPY requirements.txt /app/
 
-# Installer les dépendances
+# Installer les dépendances nécessaires
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copier tout le code source dans le conteneur
+# Copier le reste des fichiers du projet dans le conteneur
 COPY . /app/
 
-# Exposer le port sur lequel l'application écoutera
-EXPOSE 5000
+# Exposer le port 5000 pour Flask
+EXPOSE 5005
 
 # Commande pour démarrer l'application Flask avec gunicorn
 CMD ["gunicorn", "app:app", "--bind", "127.0.0.1:5005"]
