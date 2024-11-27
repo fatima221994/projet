@@ -4,30 +4,25 @@ import requests
 import numpy as np
 import os
 
-
 # Définir le port à partir de la variable d'environnement de Heroku
 port = os.getenv("PORT", "8501")
-
 st.write(f"App is running on port {port}")
 
 # URL de l'API déployée
-#API_URL = 'http://127.0.0.1:5005/predict'  # Remplacez par l'URL de votre API Flask
-API_URL = 'https://project-science-free-014cfbe31914.herokuapp.com/'  # Remplacez par l'URL de votre API Flask
-# Charger les données de test ou des exemples de clients
-#df = pd.read_csv('/api/data/application_test.csv')  # Remplacez par le chemin de votre fichier CSV
+API_URL = 'https://project-science-free-014cfbe31914.herokuapp.com/predict'  # Remplacez par l'URL de votre API Flask
 
 # Obtenez le répertoire de travail actuel
 current_dir = os.getcwd()
-print(f"Répertoire actuel : {current_dir}")
+st.write(f"Répertoire actuel : {current_dir}")
 
 # Spécifiez le chemin absolu
 file_path = os.path.join(current_dir, 'api', 'data', 'application_test.csv')
 
 if os.path.exists(file_path):
     df = pd.read_csv(file_path)
-    print("Fichier chargé avec succès.")
+    st.write("Fichier chargé avec succès.")
 else:
-    print(f"Le fichier {file_path} est introuvable.")
+    st.write(f"Le fichier {file_path} est introuvable.")
 
 # Liste des clients
 clients = df['SK_ID_CURR'].tolist()
@@ -98,7 +93,3 @@ if st.button('Faire la prédiction'):
             st.write(f"Erreur : {response_data.get('error', 'Inconnue')}")
     except Exception as e:
         st.write(f"Erreur lors de la requête API : {str(e)}")
-
-# Lancer Streamlit en écoutant sur le port correct
-#if __name__ == "__main__":
-    #st.run(port=port)
