@@ -4,92 +4,65 @@ import requests
 import numpy as np
 import os
 
-# Définir le port à partir de la variable d'environnement de Heroku
-port = os.getenv("PORT", "8501")
-st.write(f"App is running on port {port}")
-
-# URL de l'API déployée
 API_URL = 'https://project-science-free-014cfbe31914.herokuapp.com/predict'  # Remplacez par l'URL de votre API Flask
 
-# Obtenez le répertoire de travail actuel
-current_dir = os.getcwd()
-st.write(f"Répertoire actuel : {current_dir}")
+import streamlit as st
+import requests
+import json
 
-# Spécifiez le chemin absolu
-file_path = os.path.join(current_dir, 'api', 'data', 'application_test.csv')
+# URL de l'API Flask (en supposant que l'API est déployée sur Heroku ou un autre serveur)
+api_url = 'https://project-science-free-014cfbe31914.herokuapp.com/predict'  # Remplacez par l'URL de votre API
 
-if os.path.exists(file_path):
-    df = pd.read_csv(file_path)
-    st.write("Fichier chargé avec succès.")
-else:
-    st.write(f"Le fichier {file_path} est introuvable.")
+# Liste des clients simulée (vous devez probablement remplacer ceci par des données réelles)
+clients = [
+    {'id': 1, 'name': 'Client 1', 'data': {'SK_ID_CURR': 1, 'NAME_CONTRACT_TYPE': 'Cash loans', 'CODE_GENDER': 'M', 'AMT_INCOME_TOTAL': 10000, 'AMT_CREDIT': 50000}},
+    {'id': 2, 'name': 'Client 2', 'data': {'SK_ID_CURR': 2, 'NAME_CONTRACT_TYPE': 'Revolving loans', 'CODE_GENDER': 'F', 'AMT_INCOME_TOTAL': 12000, 'AMT_CREDIT': 80000}},
+    # Ajoutez plus de clients ici...
+]
 
-# Liste des clients
-clients = df['SK_ID_CURR'].tolist()
-
-# Interface Streamlit pour sélectionner un client
-st.title("Simulation de scoring client")
-client_id = st.selectbox("Sélectionnez un client", clients)
-
-# Filtrer les données du client sélectionné
-client_data = df[df['SK_ID_CURR'] == client_id].iloc[0]
-
-# Afficher les informations du client
-st.write(f"Informations du client {client_id}:")
-st.write(client_data)
-
-# Préparer les données du client pour l'API
-client_data_dict = client_data.to_dict()
-
-# Nettoyer les valeurs infinies et NaN dans les données
-def clean_data(data):
-    # Remplacer NaN et valeurs infinies par des valeurs par défaut (0 dans cet exemple)
-    for key, value in data.items():
-        if isinstance(value, float) and (np.isnan(value) or np.isinf(value)):
-            data[key] = 0.0  # Remplace NaN ou inf par 0.0
-    return data
-
-client_data_dict = clean_data(client_data_dict)
-
-# Afficher les données envoyées à l'API pour debug
-st.write(f"Données envoyées à l'API : {client_data_dict}")
-
-# Envoyer les données du client à l'API et récupérer la réponse
-if st.button('Faire la prédiction'):
+# Fonction pour appeler l'API Flask et obtenir les résultats
+def get_prediction(client_data):
     try:
-        response = requests.post(API_URL, json=client_data_dict)
-        response_data = response.json()
+        response = requests.post(api_url, json=client_data)  # Envoie des données sous forme JSON
+        response.raise_for_status()  # Vérifie si la requête a réussi
+        return response.json()  # Retourne les résultats sous forme de JSON
+    except requests.exceptions.RequestException as e:
+        st.error(f"Erreur lors de la connexion à l'API: {e}")
+        return None
 
-        # Vérifier si la prédiction a réussi
-        if 'error' not in response_data:
-            # Récupérer la probabilité, la classe de crédit et le coût
-            prediction_probability = response_data.get('probability', None)
-            prediction_class = response_data.get('prediction', None)
-            best_threshold = response_data.get('best_threshold', None)
-            cost = response_data.get('cost', None)
+# Interface utilisateur Streamlit
+st.title('Prédiction de client - API Machine Learning')
 
-            # Affichage des résultats
-            if prediction_class is not None:
-                st.write(f"Classe de crédit : {'Accordé' if prediction_class == 1 else 'Refusé'}")
-            else:
-                st.write("Classe de crédit : Non disponible")
-                
-            if prediction_probability is not None:
-                st.write(f"Probabilité de défaut : {prediction_probability:.2f}")
-            else:
-                st.write("Probabilité de défaut : Non disponible")
+# Affichage d'une liste déroulante pour choisir un client
+client_names = [client['name'] for client in clients]
+selected_client_name = st.selectbox('Sélectionnez un client:', client_names)
 
-            if cost is not None:
-                st.write(f"Coût métier : {cost}")
-            else:
-                st.write("Coût métier : Non disponible")
+# Récupérer les données du client sélectionné
+selected_client = next(client for client in clients if client['name'] == selected_client_name)
+client_data = selected_client['data']
 
-            if best_threshold is not None:
-                st.write(f"Seuil optimal : {best_threshold:.4f}")
-            else:
-                st.write("Seuil optimal : Non disponible")
+# Afficher les données du client pour confirmation
+st.write("Données du client sélectionné:", client_data)
 
-        else:
-            st.write(f"Erreur : {response_data.get('error', 'Inconnue')}")
-    except Exception as e:
-        st.write(f"Erreur lors de la requête API : {str(e)}")
+# Faire la prédiction lorsque l'utilisateur clique sur le bouton
+if st.button('Obtenir la prédiction'):
+    result = get_prediction(client_data)
+
+    if result:
+        # Affichage des résultats de la prédiction
+        st.subheader('Résultats de la prédiction')
+        st.write(f"Prédiction (0 ou 1): {result['prediction']}")
+        st.write(f"Probabilité: {result['probability']:.4f}")
+        st.write(f"Seuil optimal: {result['best_threshold']}")
+        st.write(f"Coût métier: {result['cost']}")
+        
+        # Affichage des détails du coût
+        st.write("Détails du coût métier:")
+        st.write(f"TN: {result['cost_details']['TN']}")
+        st.write(f"FP: {result['cost_details']['FP']}")
+        st.write(f"FN: {result['cost_details']['FN']}")
+        st.write(f"TP: {result['cost_details']['TP']}")
+        
+        # Affichage des métriques
+        st.write("Métriques de performance du modèle:")
+        st.write(result['metrics'])
