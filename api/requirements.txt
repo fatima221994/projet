@@ -10,6 +10,6 @@ imblearn==0.0
 category_encoders==2.5.0
 xgboost==1.6.2  # Utiliser une version compatible pour Python 3.9
 joblib==1.2.0
-werkzeug>=2.3.3
+werkzeug==2.3.3
 
 
