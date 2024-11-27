@@ -4,8 +4,13 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import make_scorer
+from flask_cors import CORS
 
+# Ajoutez CORS à votre application Flask
 app = Flask(__name__)
+CORS(app)
+
+
 
 
 import pickle
