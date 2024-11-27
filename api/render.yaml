@@ -3,8 +3,8 @@ services:
     name: flask-api
     env: python
     plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "python app.py"
+    buildCommand: "docker build -t flask-api ."
+    startCommand: "docker run -p 5005:5005 flask-api"
     envVars:
       - key: FLASK_ENV
         value: production
