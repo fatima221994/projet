@@ -3,9 +3,10 @@ services:
     name: flask-api
     env: python
     plan: free
-    buildCommand: "docker build -t flask-api ."
-    startCommand: "docker run -p 5005:5005 flask-api"
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app --bind 127.0.0.1:5005"
     envVars:
       - key: FLASK_ENV
         value: production
+    dockerfilePath: ./Dockerfile  # Pointage vers le Dockerfile dans votre projet
 
