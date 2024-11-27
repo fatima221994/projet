@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import requests
 import numpy as np
+import os
+
+
 # Définir le port à partir de la variable d'environnement de Heroku
 port = os.getenv("PORT", "8501")
 
@@ -82,3 +85,7 @@ if st.button('Faire la prédiction'):
             st.write(f"Erreur : {response_data.get('error', 'Inconnue')}")
     except Exception as e:
         st.write(f"Erreur lors de la requête API : {str(e)}")
+
+# Lancer Streamlit en écoutant sur le port correct
+if __name__ == "__main__":
+    st.run(port=port)
