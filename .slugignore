@@ -8,7 +8,6 @@ tests/
 *.zip
 *.tar.gz
 *.log
-models/
 temp/
-*.pkl
+
 
