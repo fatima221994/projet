@@ -134,15 +134,6 @@ def predict():
         # Calculer la prédiction binaire en fonction du meilleur seuil
         y_pred_bin = (y_pred_proba >= best_threshold).astype(int)
         
-        # Calculer la matrice de confusion et le coût métier
-        y_true = np.array([0])  # À ajuster si vous avez les vraies étiquettes dans les données
-        cm = confusion_matrix(y_true, y_pred_bin)
-        if cm.size == 4:  # Vérifier que la matrice de confusion est bien 2x2
-            tn, fp, fn, tp = cm.ravel()
-            cost = 10 * fn + fp  # Coût métier
-        else:
-            tn, fp, fn, tp = 0, 0, 0, 0
-            cost = 1.0  # Coût par défaut en cas de problème avec la matrice de confusion
         
         # Retourner les résultats sous forme JSON
         response = {
