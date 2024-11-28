@@ -68,7 +68,8 @@ def preprocess_data(data):
         'INSTALLMENTS_NUM_INSTALMENT_NUMBER', 'income_credit_ratio', 'age', 'years_employed', 'log_AMT_INCOME_TOTAL',
         'annuity_income_ratio', 'log_AMT_CREDIT', 'is_employed', 'credit_income_ratio', 'debt_to_income_ratio'
     ]
-        # Créer un DataFrame avec les données reçues
+    
+    # Créer un DataFrame avec les données reçues
     df = pd.DataFrame([data], columns=expected_columns)
     
     # Appliquer l'encodage des labels pour les colonnes catégorielles
@@ -80,11 +81,6 @@ def preprocess_data(data):
             df[col] = le.fit_transform(df[col])
 
     return df
-
-
-   # df = pd.DataFrame([data], columns=expected_columns)
-    
-   # return df
 
 
 # Fonction de coût métier (10 * FN + FP)
@@ -167,5 +163,3 @@ def predict():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=True)
-
-    #app.run(host='127.0.0.1', port=5005, debug=True)
