@@ -8,3 +8,6 @@ gunicorn==20.1.0
 pandas==1.3.3
 imblearn
 flask_cors
+category-encoders==2.6.4
+
+
