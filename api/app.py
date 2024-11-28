@@ -15,11 +15,20 @@ app = Flask(__name__)
 CORS(app)
 
 # Charger le modèle et le préprocesseur
-with open('models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl', 'rb') as f:
-    model = pickle.load(f)
+model = joblib.load('models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl')
+#with open('models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl', 'rb') as f:
+    #model = pickle.load(f)
 
-with open('models/preprocessor.pkl', 'rb') as f:
-    preprocessor = pickle.load(f)    
+# Vérifier si le modèle a la méthode 'predict_proba'
+print(f"Type du modèle chargé : {type(model)}")
+
+# Optionnellement, vous pouvez ajouter une vérification plus stricte :
+if not hasattr(model, 'predict_proba'):
+    raise ValueError("Le modèle chargé n'a pas la méthode 'predict_proba'. Vérifiez le fichier du modèle.")
+
+preprocessor = joblib.load('models/preprocessor.pkl')
+#with open('models/preprocessor.pkl', 'rb') as f:
+    #preprocessor = pickle.load(f)    
 
 # Route d'accueil pour tester si l'API fonctionne
 @app.route('/')
