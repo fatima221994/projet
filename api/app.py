@@ -120,8 +120,7 @@ def predict():
         # Tester le coût pour chaque seuil
         for threshold in np.arange(0.0, 1.05, 0.05):
             y_pred_bin = (y_pred_proba >= threshold).astype(int)
-            #cost = cost_function(np.array([0]), y_pred_proba, threshold)
-            costs = [cost_function(y_test, y_pred_proba, threshold=t) for t in threshold]
+            cost = cost_function(np.array([0]), y_pred_proba, threshold)
             print(f"Threshold: {threshold:.2f} - Cost: {cost}")
         
         # Utiliser le seuil optimal fourni pour le score métier
