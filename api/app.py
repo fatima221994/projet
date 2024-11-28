@@ -94,14 +94,19 @@ def preprocess_data(data):
 
 # Fonction de coût métier (10 * FN + FP)
 def cost_function(y_true, y_pred_proba, threshold=0.5):
-    # Convertir les probabilités en classes binaires en fonction du seuil
     y_pred_bin = (y_pred_proba >= threshold).astype(int)
     
     # Calculer la matrice de confusion
-    tn, fp, fn, tp = confusion_matrix(y_true, y_pred_bin).ravel()
-
-    # Coût métier : 10 * FN + FP
-    return 10 * fn + fp
+    cm = confusion_matrix(y_true, y_pred_bin)
+    
+    if cm.size == 4:  # Vérifier que la matrice de confusion est bien 2x2
+        tn, fp, fn, tp = cm.ravel()
+        # Coût métier : 10 * FN + FP
+        return 10 * fn + fp
+    else:
+        print(f"Avertissement: matrice de confusion invalide: {cm}")
+        return 15.0  # Coût métier par défaut
+        
 
 # Route de prédiction
 @app.route('/predict', methods=['POST'])
