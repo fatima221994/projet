@@ -94,18 +94,14 @@ def preprocess_data(data):
 
 # Fonction de coût métier (10 * FN + FP)
 def cost_function(y_true, y_pred_proba, threshold=0.5):
+    # Convertir les probabilités en classes binaires en fonction du seuil
     y_pred_bin = (y_pred_proba >= threshold).astype(int)
     
     # Calculer la matrice de confusion
-    cm = confusion_matrix(y_true, y_pred_bin)
-    
-    if cm.size == 4:  # Vérifier que la matrice de confusion est bien 2x2
-        tn, fp, fn, tp = cm.ravel()
-        # Coût métier : 10 * FN + FP
-        return 10 * fn + fp
-    else:
-        print(f"Avertissement: matrice de confusion invalide: {cm}")
-        return 1.0  # Coût métier par défaut
+    tn, fp, fn, tp = confusion_matrix(y_true, y_pred_bin).ravel()
+
+    # Coût métier : 10 * FN + FP
+    return 10 * fn + fp
 
 # Route de prédiction
 @app.route('/predict', methods=['POST'])
@@ -123,16 +119,17 @@ def predict():
 
         # Tester le coût pour chaque seuil
         for threshold in np.arange(0.0, 1.05, 0.05):
-           # y_pred_bin = (y_pred_proba >= threshold).astype(int)
-            cost = cost_function(np.array([0]), y_pred_proba, threshold)
+            y_pred_bin = (y_pred_proba >= threshold).astype(int)
+            #cost = cost_function(np.array([0]), y_pred_proba, threshold)
+            costs = [cost_function(y_test, y_pred_proba, threshold=t) for t in thresholds]
             print(f"Threshold: {threshold:.2f} - Cost: {cost}")
         
         # Utiliser le seuil optimal fourni pour le score métier
         best_threshold = 0.4000
         
         # Calculer la prédiction binaire en fonction du meilleur seuil
-       # y_pred_bin = (y_pred_proba >= best_threshold).astype(int)
-        y_pred_bin = model.predict(processed_data) 
+        y_pred_bin = (y_pred_proba >= best_threshold).astype(int)
+        
         # Calculer la matrice de confusion et le coût métier
         y_true = np.array([0])  # À ajuster si vous avez les vraies étiquettes dans les données
         cm = confusion_matrix(y_true, y_pred_bin)
