@@ -6,6 +6,7 @@ from sklearn.metrics import confusion_matrix
 from flask_cors import CORS
 import pickle
 from sklearn.preprocessing import LabelEncoder
+import os
 
 # Initialisation de l'application Flask
 app = Flask(__name__)
@@ -20,7 +21,10 @@ with open('models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl', 'r
 with open('models/preprocessor.pkl', 'rb') as f:
     preprocessor = pickle.load(f)    
 
-
+# Route d'accueil pour tester si l'API fonctionne
+@app.route('/')
+def home():
+    return "API is running!"
 
 # Fonction pour transformer les données entrantes
 def preprocess_data(data):
@@ -64,17 +68,18 @@ def preprocess_data(data):
         'INSTALLMENTS_NUM_INSTALMENT_NUMBER', 'income_credit_ratio', 'age', 'years_employed', 'log_AMT_INCOME_TOTAL',
         'annuity_income_ratio', 'log_AMT_CREDIT', 'is_employed', 'credit_income_ratio', 'debt_to_income_ratio'
     ]
-    # Apply label encoding to categorical columns
-    categorical_columns = ['NAME_CONTRACT_TYPE', 'CODE_GENDER', 'NAME_INCOME_TYPE', 'NAME_EDUCATION_TYPE', 'NAME_FAMILY_STATUS']  # List of categorical columns
-    le = LabelEncoder()
+        # Créer un DataFrame avec les données reçues
+    df = pd.DataFrame([data], columns=expected_columns)
     
+    # Appliquer l'encodage des labels pour les colonnes catégorielles
+    categorical_columns = ['NAME_CONTRACT_TYPE', 'CODE_GENDER', 'NAME_INCOME_TYPE', 'NAME_EDUCATION_TYPE', 'NAME_FAMILY_STATUS']  # Liste des colonnes catégorielles
+    le = LabelEncoder()
+
     for col in categorical_columns:
         if col in df.columns:
             df[col] = le.fit_transform(df[col])
-    
-    # Return the processed DataFrame
-    return df
 
+    return df
 
 
    # df = pd.DataFrame([data], columns=expected_columns)
@@ -161,4 +166,6 @@ def predict():
         return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5005, debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=True)
+
+    #app.run(host='127.0.0.1', port=5005, debug=True)
