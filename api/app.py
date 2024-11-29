@@ -98,10 +98,9 @@ def cost_function(y_true, y_pred_proba, threshold=0.5):
     # Conversion des probabilités en classes binaires
     y_pred_bin = (y_pred_proba >= threshold).astype(int)
     
-    
     # Calculer la matrice de confusion
     cm = confusion_matrix(y_true, y_pred_bin)
-
+    
     print(f"Matrice de confusion : {cm}")  # Pour aider à déboguer
     print(f"Classes réelles: {set(y_true)}")
     print(f"Classes prédites: {set(y_pred_bin)}")
@@ -127,29 +126,16 @@ def predict():
     try:
         # Prétraiter les données
         processed_data = preprocess_data(data)
-
-        # Charger les vraies étiquettes (y_true) depuis un fichier CSV
-        y_true = pd.read_csv('api/data/y_val.csv')['TARGET'].values  # Assurez-vous que 'label' est la colonne contenant y_true
-
-         # Vérification de la taille de y_true
-        print(f"y_true shape: {y_true.shape}")
-
-        # Vérifiez que le nombre d'échantillons dans y_true correspond à processed_data
-        if len(y_true) != len(processed_data):
-            raise ValueError(f"Le nombre d'échantillons dans y_true ({len(y_true)}) ne correspond pas à processed_data ({len(processed_data)})")
-
+        
         # Effectuer la prédiction des probabilités
         y_pred_proba = model.predict_proba(processed_data)[:, 1]
-        print(f"Prediction Probabilities: {y_pred_proba}")
-        # Effectuer la prédiction des probabilités
-        #y_pred_proba = model.predict_proba(processed_data)[:, 1]
 
         print(f"Prediction Probabilities: {y_pred_proba}")  # Debug: afficher les probabilités de prédiction
 
         # Tester le coût pour chaque seuil
         for threshold in np.arange(0.0, 1.05, 0.05):
             y_pred_bin = (y_pred_proba >= threshold).astype(int)
-            cost = cost_function(y_true, y_pred_proba, threshold)
+            cost = cost_function(np.array([0]), y_pred_proba, threshold)
             print(f"Threshold: {threshold:.2f} - Cost: {cost}")
         
         # Utiliser le seuil optimal fourni pour le score métier
@@ -159,7 +145,7 @@ def predict():
         y_pred_bin = (y_pred_proba >= best_threshold).astype(int)
         
         # Calculer la matrice de confusion et le coût métier
-        y_true = y_true  # À ajuster si vous avez les vraies étiquettes dans les données
+        y_true = np.array([0])  # À ajuster si vous avez les vraies étiquettes dans les données
         cm = confusion_matrix(y_true, y_pred_bin)
         if cm.size == 4:  # Vérifier que la matrice de confusion est bien 2x2
             tn, fp, fn, tp = cm.ravel()
@@ -197,4 +183,3 @@ def predict():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=True)
-0
