@@ -98,7 +98,7 @@ def cost_function(y_true, y_pred_proba, threshold=0.5):
     # Conversion des probabilités en classes binaires
     y_pred_bin = (y_pred_proba >= threshold).astype(int)
     
-    y_true =  pd.read_csv('api/data/y_val.csv')
+    
     # Calculer la matrice de confusion
     cm = confusion_matrix(y_true, y_pred_bin)
 
@@ -127,6 +127,10 @@ def predict():
     try:
         # Prétraiter les données
         processed_data = preprocess_data(data)
+
+        # Charger les vraies étiquettes (y_true) depuis un fichier CSV
+        y_true = pd.read_csv('api/data/y_val.csv')['label'].values  # Assurez-vous que 'label' est la colonne contenant y_true
+
         
         # Effectuer la prédiction des probabilités
         y_pred_proba = model.predict_proba(processed_data)[:, 1]
