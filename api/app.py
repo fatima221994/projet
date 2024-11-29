@@ -133,7 +133,7 @@ def predict():
         print(f"Prediction Probabilities: {y_pred_proba}")  # Debug: afficher les probabilités de prédiction
                 # Charger les étiquettes réelles à partir du fichier CSV
         try:
-            y_true = pd.read_csv('api/data/y_val.csv')['label'].values
+            y_true = pd.read_csv('api/data/y_val.csv')['TARGET'].values
         except FileNotFoundError:
             return jsonify({"error": "Le fichier 'y_val.csv' est introuvable"}), 400
         except KeyError:
