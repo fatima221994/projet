@@ -2,32 +2,48 @@ import streamlit as st
 import pandas as pd
 import requests
 import numpy as np
+import os
 
-# URL de l'API Flask déployée (remplacez par l'URL correcte de votre API)
-API_URL = 'http://127.0.0.1:5005/predict'  # Remplacez par l'URL de votre API Flask
+# Définir le port à partir de la variable d'environnement de Heroku
+port = os.getenv("PORT", "8501")
+st.write(f"App is running on port {port}")
 
-# Charger les données de test (application_test.csv) depuis un chemin local
-df = pd.read_csv('/home/machou/openclassroom/projet/api/data/application_test.csv')  # Remplacez par le chemin correct du fichier
+# URL de l'API déployée
+API_URL = 'https://project-science-free-014cfbe31914.herokuapp.com/predict'  # Remplacez par l'URL de votre API Flask
 
-# Liste des clients disponibles dans le fichier CSV
+# Obtenez le répertoire de travail actuel
+current_dir = os.getcwd()
+st.write(f"Répertoire actuel : {current_dir}")
+
+# Spécifiez le chemin absolu
+file_path = os.path.join(current_dir, 'api', 'data', 'application_test.csv')
+
+if os.path.exists(file_path):
+    df = pd.read_csv(file_path)
+    st.write("Fichier chargé avec succès.")
+else:
+    st.write(f"Le fichier {file_path} est introuvable.")
+
+# Liste des clients
 clients = df['SK_ID_CURR'].tolist()
 
-# Interface Streamlit : Sélectionner un client parmi la liste
+# Interface Streamlit pour sélectionner un client
 st.title("Simulation de scoring client")
 client_id = st.selectbox("Sélectionnez un client", clients)
 
 # Filtrer les données du client sélectionné
 client_data = df[df['SK_ID_CURR'] == client_id].iloc[0]
 
-# Affichage des informations du client
+# Afficher les informations du client
 st.write(f"Informations du client {client_id}:")
 st.write(client_data)
 
-# Préparer les données du client pour l'API sous forme de dictionnaire
+# Préparer les données du client pour l'API
 client_data_dict = client_data.to_dict()
 
-# Fonction pour nettoyer les données (remplacer NaN et inf par des valeurs par défaut)
+# Nettoyer les valeurs infinies et NaN dans les données
 def clean_data(data):
+    # Remplacer NaN et valeurs infinies par des valeurs par défaut (0 dans cet exemple)
     for key, value in data.items():
         if isinstance(value, float) and (np.isnan(value) or np.isinf(value)):
             data[key] = 0.0  # Remplace NaN ou inf par 0.0
@@ -35,26 +51,24 @@ def clean_data(data):
 
 client_data_dict = clean_data(client_data_dict)
 
-# Afficher les données envoyées à l'API pour débogage
+# Afficher les données envoyées à l'API pour debug
 st.write(f"Données envoyées à l'API : {client_data_dict}")
 
-# Bouton pour faire la prédiction
+# Envoyer les données du client à l'API et récupérer la réponse
 if st.button('Faire la prédiction'):
     try:
-        # Envoi de la requête POST à l'API Flask avec les données du client
         response = requests.post(API_URL, json=client_data_dict)
-        
-        # Vérification de la réponse de l'API
         response_data = response.json()
-        
+
+        # Vérifier si la prédiction a réussi
         if 'error' not in response_data:
-            # Récupérer la probabilité, la classe de crédit, le seuil optimal et le coût métier
+            # Récupérer la probabilité, la classe de crédit et le coût
             prediction_probability = response_data.get('probability', None)
             prediction_class = response_data.get('prediction', None)
             best_threshold = response_data.get('best_threshold', None)
             cost = response_data.get('cost', None)
 
-            # Affichage des résultats de la prédiction
+            # Affichage des résultats
             if prediction_class is not None:
                 st.write(f"Classe de crédit : {'Accordé' if prediction_class == 1 else 'Refusé'}")
             else:
@@ -77,7 +91,5 @@ if st.button('Faire la prédiction'):
 
         else:
             st.write(f"Erreur : {response_data.get('error', 'Inconnue')}")
-    
     except Exception as e:
-        # Gestion des erreurs liées à la requête API
         st.write(f"Erreur lors de la requête API : {str(e)}")
