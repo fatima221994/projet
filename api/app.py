@@ -131,9 +131,18 @@ def predict():
         # Charger les vraies étiquettes (y_true) depuis un fichier CSV
         y_true = pd.read_csv('api/data/y_val.csv')['TARGET'].values  # Assurez-vous que 'label' est la colonne contenant y_true
 
-        
+         # Vérification de la taille de y_true
+        print(f"y_true shape: {y_true.shape}")
+
+        # Vérifiez que le nombre d'échantillons dans y_true correspond à processed_data
+        if len(y_true) != len(processed_data):
+            raise ValueError(f"Le nombre d'échantillons dans y_true ({len(y_true)}) ne correspond pas à processed_data ({len(processed_data)})")
+
         # Effectuer la prédiction des probabilités
         y_pred_proba = model.predict_proba(processed_data)[:, 1]
+        print(f"Prediction Probabilities: {y_pred_proba}")
+        # Effectuer la prédiction des probabilités
+        #y_pred_proba = model.predict_proba(processed_data)[:, 1]
 
         print(f"Prediction Probabilities: {y_pred_proba}")  # Debug: afficher les probabilités de prédiction
 
