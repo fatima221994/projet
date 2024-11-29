@@ -129,7 +129,7 @@ def predict():
         
         # Effectuer la prédiction des probabilités
         y_pred_proba = model.predict_proba(processed_data)[:, 1]
-        y_true = pd.read_csv('/api/data/y_test.csv')
+        y_true = pd.read_csv('api/data/y_test.csv')
         print(f"Prediction Probabilities: {y_pred_proba}")  # Debug: afficher les probabilités de prédiction
 
         # Tester le coût pour chaque seuil
