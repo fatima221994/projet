@@ -102,13 +102,13 @@ def cost_function(y_true, y_pred_proba, threshold=0.5):
     cm = confusion_matrix(y_true, y_pred_bin)
     
     print(f"Matrice de confusion : {cm}")  # Pour aider à déboguer
-    
+    print(f"Classes réelles: {set(y_true)}")
+    print(f"Classes prédites: {set(y_pred_bin)}")
+
     # Vérifier que la matrice de confusion est bien 2x2
     if cm.shape == (2, 2):  # Vérifier si la matrice est bien 2x2
         tn, fp, fn, tp = cm.ravel()  # Extraire les éléments de la matrice de confusion
-    print(f"Classes réelles: {set(y_true)}")
-    print(f"Classes prédites: {set(y_pred_bin)}")
-      
+        
         # Calculer le coût métier
         return 10 * fn + fp  # Coût : 10 * FN + FP
     else:
