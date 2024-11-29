@@ -131,19 +131,11 @@ def predict():
         y_pred_proba = model.predict_proba(processed_data)[:, 1]
 
         print(f"Prediction Probabilities: {y_pred_proba}")  # Debug: afficher les probabilités de prédiction
-                # Charger les étiquettes réelles à partir du fichier CSV
-        try:
-            y_true = pd.read_csv('api/data/y_val.csv')['TARGET'].values
-        except FileNotFoundError:
-            return jsonify({"error": "Le fichier 'y_val.csv' est introuvable"}), 400
-        except KeyError:
-            return jsonify({"error": "La colonne 'label' est manquante dans 'y_val.csv'"}), 400
 
-        # Tester le coût pour chaque seuil
-        for threshold in np.arange(0.0, 1.05, 0.05):
-            y_pred_bin = (y_pred_proba >= threshold).astype(int)
-            cost = cost_function(y_true, y_pred_proba, threshold)
-            print(f"Threshold: {threshold:.2f} - Cost: {cost}")
+       # Charger les vraies étiquettes (assurez-vous que 'TARGET' est la colonne contenant les étiquettes)
+        df = pd.read_csv('api/data/y_val.csv')
+        y_true = df['TARGET'].values  # Ajustez cela selon la colonne des vraies étiquettes dans votre CSV
+
         
         # Utiliser le seuil optimal fourni pour le score métier
         best_threshold = 0.4000
@@ -151,7 +143,8 @@ def predict():
         # Calculer la prédiction binaire en fonction du meilleur seuil
         y_pred_bin = (y_pred_proba >= best_threshold).astype(int)
         
-        
+        # Calculer la matrice de confusion et le coût métier
+        #y_true = np.array([0])  # À ajuster si vous avez les vraies étiquettes dans les données
         
         cm = confusion_matrix(y_true, y_pred_bin)
         if cm.size == 4:  # Vérifier que la matrice de confusion est bien 2x2
