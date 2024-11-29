@@ -127,66 +127,74 @@ def predict():
         # Prétraiter les données
         processed_data = preprocess_data(data)
         
+        # Vérifier la forme des données traitées
+        print(f"Forme des données traitées : {processed_data.shape}")
+        
         # Effectuer la prédiction des probabilités
         y_pred_proba = model.predict_proba(processed_data)[:, 1]
 
         print(f"Prediction Probabilities: {y_pred_proba}")  # Debug: afficher les probabilités de prédiction
- 
 
-        # Charger les vraies étiquettes (y_true) de votre CSV
-        df = pd.read_csv('api/data/y_val.csv')
-        y_true = df['TARGET'].values  # Assurez-vous que la colonne 'TARGET' existe
-
-        # Vérifier que y_true a la bonne taille
-        print(f"Taille des vraies étiquettes : {len(y_true)}")
-        
-        # Si vous avez un seul échantillon, ajustez la taille de y_true pour correspondre à processed_data
-        if len(y_true) != processed_data.shape[0]:
-            raise ValueError(f"Taille de y_true ({len(y_true)}) ne correspond pas à la taille des données ({processed_data.shape[0]})")
-
-        # Utiliser le seuil optimal fourni pour le score métier
-        best_threshold = 0.4000
-        
-        # Calculer la prédiction binaire en fonction du meilleur seuil
-        y_pred_bin = (y_pred_proba >= best_threshold).astype(int)
-        
-        # Calculer la matrice de confusion et le coût métier
-        #y_true = np.array([0])  # À ajuster si vous avez les vraies étiquettes dans les données
-        
-        cm = confusion_matrix(y_true, y_pred_bin)
-        if cm.size == 4:  # Vérifier que la matrice de confusion est bien 2x2
-            tn, fp, fn, tp = cm.ravel()
-            cost = 10 * fn + fp  # Coût métier
-        else:
-            tn, fp, fn, tp = 0, 0, 0, 0
-            cost = 1.0  # Coût par défaut en cas de problème avec la matrice de confusion
-        
-        # Retourner les résultats sous forme JSON
-        response = {
-            'prediction': int(y_pred_bin[0]),
-            'probability': float(y_pred_proba[0]),
-            'best_threshold': float(best_threshold),
-            'cost': float(cost),
-            'cost_details': {
-                'TN': int(tn),
-                'FP': int(fp),
-                'FN': int(fn),
-                'TP': int(tp)
-            },
-            'metrics': {
-                'AUC': 0.7625,
-                'Accuracy': 0.7992,
-                'F1-Score': 0.3039,
-                'Precision': 0.2110,
-                'Recall': 0.5430,
-                'Best Cost Score': -21746.8
+        # Si nous avons un seul échantillon, nous n'avons pas besoin de la comparaison avec y_true
+        if processed_data.shape[0] == 1:
+            response = {
+                'prediction': int(y_pred_proba[0] >= 0.4000),  # 1 si la probabilité est supérieure au seuil, sinon 0
+                'probability': float(y_pred_proba[0]),
+                'best_threshold': 0.4000,
+                'cost': 0.0,  # Pas de coût car nous n'avons pas de matrice de confusion pour un seul échantillon
+                'cost_details': {},
+                'metrics': {}  # Pas de métriques pour un seul échantillon
             }
-        }
-        
+        else:
+            # Charger les vraies étiquettes (y_true) de votre CSV pour un jeu de données complet
+            df = pd.read_csv('api/data/y_val.csv')
+            y_true = df['TARGET'].values  # Assurez-vous que la colonne 'TARGET' existe
+
+            # Vérifier que y_true a la bonne taille
+            print(f"Taille des vraies étiquettes : {len(y_true)}")
+            
+            # Vérifier que y_true correspond à la taille des données traitées
+            if len(y_true) != processed_data.shape[0]:
+                raise ValueError(f"Taille de y_true ({len(y_true)}) ne correspond pas à la taille des données ({processed_data.shape[0]})")
+
+            # Calculer la prédiction binaire en fonction du meilleur seuil
+            y_pred_bin = (y_pred_proba >= 0.4000).astype(int)
+            
+            # Calculer la matrice de confusion et le coût métier
+            cm = confusion_matrix(y_true, y_pred_bin)
+            if cm.size == 4:  # Vérifier que la matrice de confusion est bien 2x2
+                tn, fp, fn, tp = cm.ravel()
+                cost = 10 * fn + fp  # Coût métier
+            else:
+                tn, fp, fn, tp = 0, 0, 0, 0
+                cost = 1.0  # Coût par défaut en cas de problème avec la matrice de confusion
+            
+            response = {
+                'prediction': int(y_pred_bin[0]),
+                'probability': float(y_pred_proba[0]),
+                'best_threshold': 0.4000,
+                'cost': float(cost),
+                'cost_details': {
+                    'TN': int(tn),
+                    'FP': int(fp),
+                    'FN': int(fn),
+                    'TP': int(tp)
+                },
+                'metrics': {
+                    'AUC': 0.7625,
+                    'Accuracy': 0.7992,
+                    'F1-Score': 0.3039,
+                    'Precision': 0.2110,
+                    'Recall': 0.5430,
+                    'Best Cost Score': -21746.8
+                }
+            }
+
         return jsonify(response)
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=True)
