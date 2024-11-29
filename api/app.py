@@ -100,7 +100,7 @@ def cost_function(y_true, y_pred_proba, threshold=0.5):
     
     # Calculer la matrice de confusion
     cm = confusion_matrix(y_true, y_pred_bin)
-    y_true =  pd.read_csv('api/data/y_val.csv')
+    y_true =  pd.read_csv('api/data/X_val.csv')
     print(f"Matrice de confusion : {cm}")  # Pour aider à déboguer
     print(f"Classes réelles: {set(y_true)}")
     print(f"Classes prédites: {set(y_pred_bin)}")
@@ -183,3 +183,4 @@ def predict():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=True)
+0
