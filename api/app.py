@@ -142,7 +142,7 @@ def predict():
                 'probability': float(y_pred_proba[0]),
                 'best_threshold': 0.4000,
                 'cost': 0.0,  # Pas de coût car nous n'avons pas de matrice de confusion pour un seul échantillon
-                'cost_details': {},
+                'cost_details': {},  # Pas de détails de coût
                 'metrics': {}  # Pas de métriques pour un seul échantillon
             }
         else:
@@ -169,6 +169,13 @@ def predict():
                 tn, fp, fn, tp = 0, 0, 0, 0
                 cost = 1.0  # Coût par défaut en cas de problème avec la matrice de confusion
             
+            # Calculer les métriques (Accuracy, Precision, Recall, AUC, etc.)
+            accuracy = accuracy_score(y_true, y_pred_bin)
+            precision = precision_score(y_true, y_pred_bin)
+            recall = recall_score(y_true, y_pred_bin)
+            f1 = f1_score(y_true, y_pred_bin)
+            auc = roc_auc_score(y_true, y_pred_proba)
+            
             response = {
                 'prediction': int(y_pred_bin[0]),
                 'probability': float(y_pred_proba[0]),
@@ -181,12 +188,12 @@ def predict():
                     'TP': int(tp)
                 },
                 'metrics': {
-                    'AUC': 0.7625,
-                    'Accuracy': 0.7992,
-                    'F1-Score': 0.3039,
-                    'Precision': 0.2110,
-                    'Recall': 0.5430,
-                    'Best Cost Score': -21746.8
+                    'AUC': float(auc),
+                    'Accuracy': float(accuracy),
+                    'F1-Score': float(f1),
+                    'Precision': float(precision),
+                    'Recall': float(recall),
+                    'Best Cost Score': float(cost)
                 }
             }
 
@@ -194,6 +201,7 @@ def predict():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
 
 
 if __name__ == '__main__':
