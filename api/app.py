@@ -129,7 +129,7 @@ def predict():
         processed_data = preprocess_data(data)
 
         # Charger les vraies étiquettes (y_true) depuis un fichier CSV
-        y_true = pd.read_csv('api/data/y_val.csv')['label'].values  # Assurez-vous que 'label' est la colonne contenant y_true
+        y_true = pd.read_csv('api/data/y_val.csv')['TARGET'].values  # Assurez-vous que 'label' est la colonne contenant y_true
 
         
         # Effectuer la prédiction des probabilités
