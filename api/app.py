@@ -98,9 +98,10 @@ def cost_function(y_true, y_pred_proba, threshold=0.5):
     # Conversion des probabilités en classes binaires
     y_pred_bin = (y_pred_proba >= threshold).astype(int)
     
+    y_true =  pd.read_csv('api/data/y_val.csv')
     # Calculer la matrice de confusion
     cm = confusion_matrix(y_true, y_pred_bin)
-    y_true =  pd.read_csv('api/data/X_val.csv')
+
     print(f"Matrice de confusion : {cm}")  # Pour aider à déboguer
     print(f"Classes réelles: {set(y_true)}")
     print(f"Classes prédites: {set(y_pred_bin)}")
