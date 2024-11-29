@@ -131,12 +131,19 @@ def predict():
         y_pred_proba = model.predict_proba(processed_data)[:, 1]
 
         print(f"Prediction Probabilities: {y_pred_proba}")  # Debug: afficher les probabilités de prédiction
+ 
 
-       # Charger les vraies étiquettes (assurez-vous que 'TARGET' est la colonne contenant les étiquettes)
+        # Charger les vraies étiquettes (y_true) de votre CSV
         df = pd.read_csv('api/data/y_val.csv')
-        y_true = df['TARGET'].values  # Ajustez cela selon la colonne des vraies étiquettes dans votre CSV
+        y_true = df['TARGET'].values  # Assurez-vous que la colonne 'TARGET' existe
 
+        # Vérifier que y_true a la bonne taille
+        print(f"Taille des vraies étiquettes : {len(y_true)}")
         
+        # Si vous avez un seul échantillon, ajustez la taille de y_true pour correspondre à processed_data
+        if len(y_true) != processed_data.shape[0]:
+            raise ValueError(f"Taille de y_true ({len(y_true)}) ne correspond pas à la taille des données ({processed_data.shape[0]})")
+
         # Utiliser le seuil optimal fourni pour le score métier
         best_threshold = 0.4000
         
