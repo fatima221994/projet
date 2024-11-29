@@ -135,7 +135,7 @@ def predict():
         # Tester le coût pour chaque seuil
         for threshold in np.arange(0.0, 1.05, 0.05):
             y_pred_bin = (y_pred_proba >= threshold).astype(int)
-            cost = cost_function(np.array([0]), y_pred_proba, threshold)
+            cost = cost_function(y_true, y_pred_proba, threshold)
             print(f"Threshold: {threshold:.2f} - Cost: {cost}")
         
         # Utiliser le seuil optimal fourni pour le score métier
@@ -145,7 +145,9 @@ def predict():
         y_pred_bin = (y_pred_proba >= best_threshold).astype(int)
         
         # Calculer la matrice de confusion et le coût métier
-        y_true = np.array([0])  # À ajuster si vous avez les vraies étiquettes dans les données
+        #y_true = np.array([0])  # À ajuster si vous avez les vraies étiquettes dans les données
+        # Charger les étiquettes réelles y_true
+        y_true = pd.read_csv('api/data/y_val.csv')['label'].values
         cm = confusion_matrix(y_true, y_pred_bin)
         if cm.size == 4:  # Vérifier que la matrice de confusion est bien 2x2
             tn, fp, fn, tp = cm.ravel()
