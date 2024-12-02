@@ -3,30 +3,34 @@ name: Deploy to Heroku
 on:
   push:
     branches:
-      - main  # Remplacez "main" par votre branche de production
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
-      # Étape 1 : Vérification du code
       - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Étape 2 : Installer Heroku CLI
+        uses: actions/checkout@v2
+        
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+          
       - name: Install Heroku CLI
         run: |
           curl https://cli-assets.heroku.com/install.sh | sh
-
-      # Étape 3 : Connexion à Heroku via l'API key et l'email
-      - name: Login to Heroku
-        run: |
-          echo "machine api.heroku.com" > ~/.netrc
-          echo "  login ${{ secrets.HEROKU_EMAIL }}" >> ~/.netrc
-          echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
           
-      # Étape 4 : Déployer sur Heroku
-      - name: Push to Heroku
-        run: git push https://git.heroku.com/project-science-free.git main
+      - name: Log in to Heroku
+        run: echo "$HEROKU_API_KEY" | heroku auth:token
+        
+      - name: Deploy to Heroku
+        run: git remote add heroku https://git.heroku.com/${{ secrets.HEROKU_APP_NAME }}.git
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+          
+      - name: Push code to Heroku
+        run: git push heroku main
 
