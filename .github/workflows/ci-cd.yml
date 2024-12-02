@@ -3,7 +3,7 @@ name: Deploy to Heroku
 on:
   push:
     branches:
-      - main  # Déclenche le workflow lorsque vous poussez sur la branche principale (main)
+      - main  # Déclenche le workflow lors d'un push sur la branche principale (main)
 
 jobs:
   deploy:
@@ -23,16 +23,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Set up SSH for Heroku
+      - name: Login to Heroku (using API Key)
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.HEROKU_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H git.heroku.com >> ~/.ssh/known_hosts
-
-      - name: Login to Heroku (SSH)
-        run: |
-          git remote set-url heroku git@heroku.com:project-science-free.git
+          echo "${{ secrets.HEROKU_API_KEY }}" | heroku auth:token  # Utilisation du secret API key
+          
+      - name: Set Heroku remote
+        run: heroku git:remote -a project-science-free
 
       - name: Push to Heroku
         run: git push heroku main
