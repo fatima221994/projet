@@ -1,0 +1,13 @@
+.git/
+.env
+.vscode/
+tests/
+*.log
+*.md
+.venv/
+*.zip
+*.tar.gz
+*.log
+temp/
+
+

@@ -3,29 +3,37 @@ import joblib
 import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix
-from sklearn.metrics import make_scorer
+from flask_cors import CORS
+import pickle
+from sklearn.preprocessing import LabelEncoder
+import os
 
+# Initialisation de l'application Flask
 app = Flask(__name__)
 
+# Ajouter CORS à votre application Flask
+CORS(app)
 
-import pickle
+# Charger le modèle et le préprocesseur
+model = joblib.load('models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl')
+#with open('models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl', 'rb') as f:
+    #model = pickle.load(f)
 
-with open('models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl', 'rb') as f:
-    model = pickle.load(f)
+# Vérifier si le modèle a la méthode 'predict_proba'
+print(f"Type du modèle chargé : {type(model)}")
 
-import pickle
+# Optionnellement, vous pouvez ajouter une vérification plus stricte :
+if not hasattr(model, 'predict_proba'):
+    raise ValueError("Le modèle chargé n'a pas la méthode 'predict_proba'. Vérifiez le fichier du modèle.")
 
-with open('models/preprocessor.pkl', 'rb') as f:
-    preprocessor = pickle.load(f)    
+preprocessor = joblib.load('models/preprocessor.pkl')
+#with open('models/preprocessor.pkl', 'rb') as f:
+    #preprocessor = pickle.load(f)    
 
-# Charger le modèle pré-entrainé (remplacez par le chemin de votre modèle)
-#model = joblib.load('models/xgb_model_with_smote_and_score_metier_etape_par_etape.pkl')  # Assurez-vous que le modèle est déjà sauvegardé en utilisant joblib
-# Charger le préprocesseur (si vous en avez un)
-#preprocessor = joblib.load('models/preprocessor.pkl')
-
-
-
-
+# Route d'accueil pour tester si l'API fonctionne
+@app.route('/')
+def home():
+    return "API is running!"
 
 # Fonction pour transformer les données entrantes
 def preprocess_data(data):
@@ -70,25 +78,45 @@ def preprocess_data(data):
         'annuity_income_ratio', 'log_AMT_CREDIT', 'is_employed', 'credit_income_ratio', 'debt_to_income_ratio'
     ]
     
+    # Créer un DataFrame avec les données reçues
     df = pd.DataFrame([data], columns=expected_columns)
     
+    # Appliquer l'encodage des labels pour les colonnes catégorielles
+    categorical_columns = ['NAME_CONTRACT_TYPE', 'CODE_GENDER', 'NAME_INCOME_TYPE', 'NAME_EDUCATION_TYPE', 'NAME_FAMILY_STATUS']  # Liste des colonnes catégorielles
+    le = LabelEncoder()
+
+    for col in categorical_columns:
+        if col in df.columns:
+            df[col] = le.fit_transform(df[col])
+
     return df
 
 
 # Fonction de coût métier (10 * FN + FP)
+
 def cost_function(y_true, y_pred_proba, threshold=0.5):
+    # Conversion des probabilités en classes binaires
     y_pred_bin = (y_pred_proba >= threshold).astype(int)
     
     # Calculer la matrice de confusion
     cm = confusion_matrix(y_true, y_pred_bin)
     
-    if cm.size == 4:  # Vérifier que la matrice de confusion est bien 2x2
-        tn, fp, fn, tp = cm.ravel()
-        # Coût métier : 10 * FN + FP
-        return 10 * fn + fp
+    print(f"Matrice de confusion : {cm}")  # Pour aider à déboguer
+    print(f"Classes réelles: {set(y_true)}")
+    print(f"Classes prédites: {set(y_pred_bin)}")
+
+    # Vérifier que la matrice de confusion est bien 2x2
+    if cm.shape == (2, 2):  # Vérifier si la matrice est bien 2x2
+        tn, fp, fn, tp = cm.ravel()  # Extraire les éléments de la matrice de confusion
+        
+        # Calculer le coût métier
+        return 10 * fn + fp  # Coût : 10 * FN + FP
     else:
         print(f"Avertissement: matrice de confusion invalide: {cm}")
-        return 1.0  # Coût métier par défaut
+        return 15.0  # Valeur par défaut si la matrice n'est pas valide
+
+
+        
 
 # Route de prédiction
 @app.route('/predict', methods=['POST'])
@@ -102,50 +130,16 @@ def predict():
         # Effectuer la prédiction des probabilités
         y_pred_proba = model.predict_proba(processed_data)[:, 1]
 
-        print(f"Prediction Probabilities: {y_pred_proba}")  # Debug: afficher les probabilités de prédiction
-
-        # Tester le coût pour chaque seuil
-        for threshold in np.arange(0.0, 1.05, 0.05):
-            y_pred_bin = (y_pred_proba >= threshold).astype(int)
-            cost = cost_function(np.array([0]), y_pred_proba, threshold)
-            print(f"Threshold: {threshold:.2f} - Cost: {cost}")
-        
         # Utiliser le seuil optimal fourni pour le score métier
         best_threshold = 0.4000
         
         # Calculer la prédiction binaire en fonction du meilleur seuil
         y_pred_bin = (y_pred_proba >= best_threshold).astype(int)
-
-        # Calculer la matrice de confusion et le coût métier
-        y_true = np.array([0])  # À ajuster si vous avez les vraies étiquettes dans les données
-        cm = confusion_matrix(y_true, y_pred_bin)
-        if cm.size == 4:  # Vérifier que la matrice de confusion est bien 2x2
-            tn, fp, fn, tp = cm.ravel()
-            cost = 10 * fn + fp  # Coût métier
-        else:
-            tn, fp, fn, tp = 0, 0, 0, 0
-            cost = 1.0  # Coût par défaut en cas de problème avec la matrice de confusion
         
-        # Retourner les résultats sous forme JSON
+        # Retourner uniquement la probabilité et la prédiction
         response = {
             'prediction': int(y_pred_bin[0]),
-            'probability': float(y_pred_proba[0]),
-            'best_threshold': float(best_threshold),
-            'cost': float(cost),
-            'cost_details': {
-                'TN': int(tn),
-                'FP': int(fp),
-                'FN': int(fn),
-                'TP': int(tp)
-            },
-            'metrics': {
-                'AUC': 0.7625,
-                'Accuracy': 0.7992,
-                'F1-Score': 0.3039,
-                'Precision': 0.2110,
-                'Recall': 0.5430,
-                'Best Cost Score': -21746.8
-            }
+            'probability': float(y_pred_proba[0])
         }
         
         return jsonify(response)
@@ -153,5 +147,6 @@ def predict():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5005, debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=True)
