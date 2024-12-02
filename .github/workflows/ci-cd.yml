@@ -1,9 +1,9 @@
-name: Deploy to Render
+name: Deploy to Heroku
 
 on:
   push:
     branches:
-      - main  # Déclenche le workflow lorsque vous poussez sur la branche principale (main)
+      - main
 
 jobs:
   deploy:
@@ -16,16 +16,20 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.9'  # Spécifiez la version Python que vous utilisez
+          python-version: '3.9'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r api/requirements.txt
 
+      - name: Install Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+
       - name: Login to Heroku
         run: |
-          echo "${{ secrets.HEROKU_API_KEY }}" | heroku auth:token
+          echo ${{ secrets.HEROKU_API_KEY }} | heroku auth:token > ~/.netrc
           heroku git:remote -a project-science-free
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
