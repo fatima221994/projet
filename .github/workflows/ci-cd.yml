@@ -3,7 +3,7 @@ name: Deploy to Heroku
 on:
   push:
     branches:
-      - main  # Déclenche le workflow lors d'un push sur la branche principale (main)
+      - main
 
 jobs:
   deploy:
@@ -24,9 +24,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Login to Heroku (using API Key)
-        run: |
-          echo "${{ secrets.HEROKU_API_KEY }}" | heroku auth:token  # Utilisation du secret API key
-          
+        run: echo "${{ secrets.HEROKU_API_KEY }}" | heroku auth:token  # Assurez-vous que le secret est utilisé
+
       - name: Set Heroku remote
         run: heroku git:remote -a project-science-free
 
