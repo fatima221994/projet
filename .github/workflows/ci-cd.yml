@@ -23,19 +23,17 @@ jobs:
           python -m pip install --upgrade pip  # Met à jour pip
           pip install -r requirements.txt  # Installe les dépendances spécifiées
 
-      - name: Login to Heroku
+      - name: Set up Heroku authentication
         run: |
-          echo "${{ secrets.HEROKU_API_KEY }}" | heroku auth:token  # Authentifie avec la clé API Heroku
-          heroku git:remote -a project-science-free  # Configure la télécommande Git pour Heroku
+          echo "machine git.heroku.com login ${{ secrets.HEROKU_API_KEY }} password" >> ~/.netrc
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}  # Utilise la clé API stockée dans les secrets GitHub
 
-      - name: Set up git credentials for Heroku
+      - name: Add Heroku remote
         run: |
-          git config --global credential.helper 'store --file=.git-credentials'  # Configure git pour utiliser un fichier de credentials
-          echo "https://:${{ secrets.HEROKU_API_KEY }}@git.heroku.com" > .git-credentials  # Ajoute le token API Heroku dans les credentials
-          
+          git remote add heroku https://git.heroku.com/project-science-free.git
+
       - name: Deploy to Heroku
         run: |
-          git push heroku main  # Utilise la télécommande heroku pour pousser vers Heroku
+          git push heroku main  # Pousse les modifications vers Heroku
 
