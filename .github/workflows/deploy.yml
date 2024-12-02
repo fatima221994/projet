@@ -3,25 +3,36 @@ name: Deploy to Heroku
 on:
   push:
     branches:
-      - main
+      - main  # Déclenche le workflow uniquement sur la branche "main"
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      # Vérifiez le code du dépôt
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Heroku authentication
-      run: |
-        echo "machine api.heroku.com" > ~/.netrc
-        echo "  login ${{ secrets.HEROKU_EMAIL }}" >> ~/.netrc
-        echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
-        echo "machine git.heroku.com" >> ~/.netrc
-        echo "  login ${{ secrets.HEROKU_EMAIL }}" >> ~/.netrc
-        echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
+      # Configurez Git pour utiliser Heroku comme distant
+      - name: Set up Heroku remote
+        run: git remote add heroku https://git.heroku.com/project-science-free.git
 
-    - name: Deploy to Heroku
-      run: git push https://git.heroku.com/project-science-free.git main
+      # Authentifiez-vous auprès de Heroku en utilisant votre clé API
+      - name: Authenticate with Heroku
+        run: |
+          echo "machine git.heroku.com" >> ~/.netrc
+          echo "  login ${{ secrets.HEROKU_EMAIL }}" >> ~/.netrc
+          echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
+        env:
+          HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+
+      # Tirez les modifications du dépôt distant Heroku pour éviter les conflits
+      - name: Pull changes from Heroku
+        run: git pull heroku main --allow-unrelated-histories || true
+
+      # Poussez les changements locaux vers Heroku
+      - name: Push changes to Heroku
+        run: git push heroku main --force
 
