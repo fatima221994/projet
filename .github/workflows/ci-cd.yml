@@ -3,37 +3,33 @@ name: Deploy to Heroku
 on:
   push:
     branches:
-      - main
+      - main  # Déclenche le workflow lors d'un push sur la branche principale (main)
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Spécifie l'environnement d'exécution
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2  # Récupère le code source du repository
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v2  # Configure l'environnement Python
         with:
-          python-version: '3.9'
+          python-version: '3.9'  # Spécifie la version de Python que vous utilisez
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r api/requirements.txt
-
-      - name: Install Heroku CLI
-        run: |
-          curl https://cli-assets.heroku.com/install.sh | sh
+          python -m pip install --upgrade pip  # Met à jour pip
+          pip install -r requirements.txt  # Installe les dépendances spécifiées
 
       - name: Login to Heroku
         run: |
-          echo "machine api.heroku.com login ${{ secrets.HEROKU_API_KEY }} password ${{ secrets.HEROKU_API_KEY }}" > ~/.netrc
-          echo "machine git.heroku.com login ${{ secrets.HEROKU_API_KEY }} password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
-          chmod 600 ~/.netrc
-          heroku git:remote -a project-science-free
+          echo "${{ secrets.HEROKU_API_KEY }}" | heroku auth:token  # Authentifie avec la clé API Heroku
+          heroku git:remote -a project-science-free  # Configure la télécommande Git pour Heroku
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}  # Utilise la clé API stockée dans les secrets GitHub
 
       - name: Deploy to Heroku
-        run: git push heroku main
+        run: git push heroku main  # Déploie l'application sur Heroku
 
