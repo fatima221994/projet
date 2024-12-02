@@ -3,22 +3,29 @@ name: Deploy to Heroku
 on:
   push:
     branches:
-      - main  # Déploiement sur la branche principale
+      - main  # Déployer lorsqu'un commit est poussé vers la branche principale
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Utilisation d'une machine Ubuntu pour exécuter les actions
 
     steps:
+    # Étape 1 : Récupérer le code source
     - name: Checkout code
       uses: actions/checkout@v2
 
+    # Étape 2 : Configurer l'authentification Heroku
     - name: Set up Heroku authentication
       run: |
+        # Création du fichier .netrc pour l'authentification
         echo "machine api.heroku.com" > ~/.netrc
         echo "  login ${{ secrets.HEROKU_EMAIL }}" >> ~/.netrc
         echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
+        echo "machine git.heroku.com" >> ~/.netrc
+        echo "  login ${{ secrets.HEROKU_EMAIL }}" >> ~/.netrc
+        echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
 
+    # Étape 3 : Déployer sur Heroku
     - name: Deploy to Heroku
       run: git push https://git.heroku.com/project-science-free.git main
 
