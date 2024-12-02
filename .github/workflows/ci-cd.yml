@@ -31,5 +31,5 @@ jobs:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}  # Utilise la clé API stockée dans les secrets GitHub
 
       - name: Deploy to Heroku
-        run: git push heroku main  # Déploie l'application sur Heroku
+        run: git push https://git.heroku.com/project-science-free.git main  # Utilise HTTPS pour pousser vers Heroku
 
