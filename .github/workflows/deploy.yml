@@ -13,6 +13,8 @@ jobs:
       # Vérifiez le code du dépôt
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Cloner le dépôt en entier pour éviter un "shallow clone"
 
       # Configurez Git pour utiliser Heroku comme distant
       - name: Set up Heroku remote
@@ -30,7 +32,7 @@ jobs:
 
       # Tirez les modifications du dépôt distant Heroku pour éviter les conflits
       - name: Pull changes from Heroku
-        run: git pull heroku main --allow-unrelated-histories || true
+        run: git fetch --unshallow heroku main || true  # Récupérer l'historique complet de Heroku
 
       # Poussez les changements locaux vers Heroku
       - name: Push changes to Heroku
