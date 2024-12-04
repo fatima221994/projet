@@ -16,6 +16,26 @@ jobs:
         with:
           fetch-depth: 0  # Cloner le dépôt en entier pour éviter un "shallow clone"
 
+      # Configurez l'environnement pour exécuter les tests
+      - name: Set up Python (ou Node.js, ou autre selon votre projet)
+        uses: actions/setup-python@v4  # Remplacez avec setup-node ou autre si nécessaire
+        with:
+          python-version: '3.x'  # Remplacez par votre version Python ou Node.js
+
+      # Installez les dépendances nécessaires pour exécuter les tests
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt  # Pour Python, ou `npm install` si c'est un projet Node.js
+
+      # Exécuter les tests
+      - name: Run tests
+        run: |
+          pytest  # Si vous utilisez Python avec pytest, ou `npm test` pour Node.js
+          
+      # Vérifiez si les tests ont échoué et arrêtez le déploiement si nécessaire
+      - name: Fail if tests fail
+        run: exit 1  # Si les tests échouent, le workflow échouera et le déploiement sera annulé
+
       # Configurez Git pour utiliser Heroku comme distant
       - name: Set up Heroku remote
         run: git remote add heroku https://git.heroku.com/project-science-free.git
