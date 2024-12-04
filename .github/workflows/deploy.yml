@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main  # Déclenche le workflow uniquement sur la branche "main"
+    paths:
+      - 'tests/**'  # Ne déclenche le workflow que si des fichiers dans le dossier tests sont modifiés
 
 jobs:
   deploy:

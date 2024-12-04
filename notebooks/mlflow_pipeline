@@ -1,0 +1,21 @@
+// MLflow Training Pipeline
+digraph {
+	A [label="Start Experiment
+mlflow.start_run()"]
+	B [label="Log Parameters
+mlflow.log_param()"]
+	C [label="Train Model"]
+	D [label="Log Metrics
+mlflow.log_metric()"]
+	E [label="Log Artifacts
+mlflow.log_artifact()"]
+	F [label="End Run
+mlflow.end_run()"]
+	G [label="Visualize in UI"]
+	A -> B
+	B -> C
+	C -> D
+	D -> E
+	E -> F
+	F -> G
+}

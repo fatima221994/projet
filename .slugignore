@@ -9,5 +9,9 @@ tests/
 *.tar.gz
 *.log
 temp/
+*.log
+*.tmp
+node_modules/
+Dockerfile/
 
 

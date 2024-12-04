@@ -13,14 +13,14 @@ API_URL = 'https://project-science-free-014cfbe31914.herokuapp.com/predict'  # R
 
 # Obtenez le répertoire de travail actuel
 current_dir = os.getcwd()
-st.write(f"Répertoire actuel : {current_dir}")
+#st.write(f"Répertoire actuel : {current_dir}")
 
 # Spécifiez le chemin absolu
-file_path = os.path.join(current_dir, 'api', 'data', 'application_test.csv')
+file_path = os.path.join(current_dir,  'mlflow_project', 'data', 'application_test.csv')
 
 if os.path.exists(file_path):
-    df = pd.read_csv(file_path)
-    st.write("Fichier chargé avec succès.")
+   #df = pd.read_csv(file_path)
+   # st.write("Fichier chargé avec succès.")
 else:
     st.write(f"Le fichier {file_path} est introuvable.")
 
@@ -70,7 +70,7 @@ if st.button('Faire la prédiction'):
 
             # Affichage des résultats
             if prediction_class is not None:
-                st.write(f"Classe de crédit : {'Accordé' if prediction_class == 1 else 'Refusé'}")
+                st.write(f"Classe de crédit : {'Accordé' if prediction_class == 0 else 'Refusé'}")
             else:
                 st.write("Classe de crédit : Non disponible")
                 

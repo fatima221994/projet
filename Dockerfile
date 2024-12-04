@@ -1,31 +1,18 @@
-# Utiliser l'image officielle Python 3.9 slim
+# Étape 1 : Utiliser une image de base Python optimisée
 FROM python:3.9-slim
 
-# Mettre à jour les packages système et installer gcc, libatlas, etc.
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    gcc \
-    libatlas-base-dev \
-    libssl-dev \
-    libffi-dev \
-    python3-dev
+# Étape 2 : Définir le répertoire de travail dans le conteneur
+WORKDIR /app
 
-# Définir le répertoire de travail
-WORKDIR /api
+# Étape 3 : Copier les fichiers nécessaires dans le conteneur
+COPY . /app
 
-# Copier d'abord les fichiers nécessaires à l'installation des dépendances
-COPY requirements.txt /api/
-
-# Installer les dépendances Python
+# Étape 4 : Installer les dépendances
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copier le reste de l'application dans le conteneur
-COPY . /ap/
+# Étape 5 : Exposer le port de l'application Flask
+EXPOSE 5000
 
-# Exposer le port 5005 pour Flask
-EXPOSE 5005
-
-# Commande pour démarrer l'application Flask avec gunicorn
-# Utiliser 0.0.0.0 pour que l'application soit accessible de l'extérieur du conteneur
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:5005"]
+# Étape 6 : Définir la commande pour exécuter l'application
+CMD ["python", "api/app.py"]
 
