@@ -21,24 +21,20 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y python3-distutils
 
       # Configurez l'environnement pour exécuter les tests
-      - name: Set up Python (ou Node.js, ou autre selon votre projet)
-        uses: actions/setup-python@v4  # Remplacez avec setup-node ou autre si nécessaire
+      - name: Set up Python 
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.9.20'  # Remplacez par votre version Python ou Node.js
+          python-version: '3.9.20'
 
       # Installez les dépendances nécessaires pour exécuter les tests
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt  # Pour Python, ou `npm install` si c'est un projet Node.js
+          pip install -r requirements.txt  # Pour Python
 
       # Exécuter les tests
       - name: Run tests
         run: |
-          pytest  # Si vous utilisez Python avec pytest, ou `npm test` pour Node.js
-          
-      # Vérifiez si les tests ont échoué et arrêtez le déploiement si nécessaire
-      - name: Fail if tests fail
-        run: exit 1  # Si les tests échouent, le workflow échouera et le déploiement sera annulé
+          pytest  # Si vous utilisez Python avec pytest
 
       # Configurez Git pour utiliser Heroku comme distant
       - name: Set up Heroku remote
@@ -56,7 +52,7 @@ jobs:
 
       # Tirez les modifications du dépôt distant Heroku pour éviter les conflits
       - name: Pull changes from Heroku
-        run: git fetch --unshallow heroku main || true  # Récupérer l'historique complet de Heroku
+        run: git fetch --unshallow heroku main || true
 
       # Poussez les changements locaux vers Heroku
       - name: Push changes to Heroku
