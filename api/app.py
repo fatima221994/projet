@@ -78,11 +78,11 @@ def preprocess_data(data):
         'annuity_income_ratio', 'log_AMT_CREDIT', 'is_employed', 'credit_income_ratio', 'debt_to_income_ratio'
     ]
     
-    # Vérification des colonnes manquantes
-    missing_columns = [col for col in expected_columns if col not in data]
-    if missing_columns:
-        return jsonify({'error': f"Clés manquantes : {', '.join(missing_columns)}"}), 400
-    
+    # Vérifier les colonnes manquantes et ajouter des valeurs par défaut
+    for col in expected_columns:
+        if col not in data:
+            data[col] = None
+
     # Créer un DataFrame avec les données reçues
     df = pd.DataFrame([data], columns=expected_columns)
     
@@ -94,7 +94,6 @@ def preprocess_data(data):
             df[col] = LabelEncoder().fit_transform(df[col])
 
     return df
-
 
 # Fonction de coût métier (10 * FN + FP)
 def cost_function(y_true, y_pred_proba, threshold=0.5):
@@ -110,6 +109,7 @@ def cost_function(y_true, y_pred_proba, threshold=0.5):
     else:
         return 15.0  # Valeur par défaut si la matrice n'est pas valide
 
+# Route de prédiction
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
@@ -137,7 +137,9 @@ def predict():
         
         return jsonify(response)
 
-    except ValueError as ve:
-        return jsonify({'error': f"Valeurs invalides : {str(ve)}"}), 400
     except Exception as e:
         return jsonify({'error': f"Une erreur s'est produite : {str(e)}"}), 500
+
+# Lancer l'application
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=True)
