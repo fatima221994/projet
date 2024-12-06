@@ -11,7 +11,7 @@ import os
 # Initialisation de l'application Flask
 app = Flask(__name__)
 
-# Ajouter CORS à votre application Flask
+# Ajouter CORS à l' application Flask
 CORS(app)
 
 # Charger le modèle et le préprocesseur
@@ -22,7 +22,7 @@ model = joblib.load('models/xgb_model_with_smote_and_score_metier_etape_par_etap
 # Vérifier si le modèle a la méthode 'predict_proba'
 print(f"Type du modèle chargé : {type(model)}")
 
-# Optionnellement, vous pouvez ajouter une vérification plus stricte :
+# Optionnellement, ajouter une vérification plus stricte :
 if not hasattr(model, 'predict_proba'):
     raise ValueError("Le modèle chargé n'a pas la méthode 'predict_proba'. Vérifiez le fichier du modèle.")
 
