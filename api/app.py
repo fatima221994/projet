@@ -78,22 +78,24 @@ def preprocess_data(data):
         'annuity_income_ratio', 'log_AMT_CREDIT', 'is_employed', 'credit_income_ratio', 'debt_to_income_ratio'
     ]
     
+    # Vérifier les colonnes manquantes et ajouter des valeurs par défaut
+    for col in expected_columns:
+        if col not in data:
+            data[col] = None
+
     # Créer un DataFrame avec les données reçues
     df = pd.DataFrame([data], columns=expected_columns)
     
     # Appliquer l'encodage des labels pour les colonnes catégorielles
-    categorical_columns = ['NAME_CONTRACT_TYPE', 'CODE_GENDER', 'NAME_INCOME_TYPE', 'NAME_EDUCATION_TYPE', 'NAME_FAMILY_STATUS']  # Liste des colonnes catégorielles
-    le = LabelEncoder()
-
+    categorical_columns = ['NAME_CONTRACT_TYPE', 'CODE_GENDER', 'FLAG_OWN_CAR', 'FLAG_OWN_REALTY']
     for col in categorical_columns:
-        if col in df.columns:
-            df[col] = le.fit_transform(df[col])
+        if col in df.columns and df[col].dtype == object:
+            df[col] = df[col].fillna('unknown')  # Remplir les valeurs manquantes
+            df[col] = LabelEncoder().fit_transform(df[col])
 
     return df
 
-
 # Fonction de coût métier (10 * FN + FP)
-
 def cost_function(y_true, y_pred_proba, threshold=0.5):
     # Conversion des probabilités en classes binaires
     y_pred_bin = (y_pred_proba >= threshold).astype(int)
@@ -101,42 +103,33 @@ def cost_function(y_true, y_pred_proba, threshold=0.5):
     # Calculer la matrice de confusion
     cm = confusion_matrix(y_true, y_pred_bin)
     
-    print(f"Matrice de confusion : {cm}")  # Pour aider à déboguer
-    print(f"Classes réelles: {set(y_true)}")
-    print(f"Classes prédites: {set(y_pred_bin)}")
-
-    # Vérifier que la matrice de confusion est bien 2x2
     if cm.shape == (2, 2):  # Vérifier si la matrice est bien 2x2
         tn, fp, fn, tp = cm.ravel()  # Extraire les éléments de la matrice de confusion
-        
-        # Calculer le coût métier
-        return 10 * fn + fp  # Coût : 10 * FN + FP
+        return 10 * fn + fp  # Coût métier
     else:
-        print(f"Avertissement: matrice de confusion invalide: {cm}")
         return 15.0  # Valeur par défaut si la matrice n'est pas valide
-
-
-        
 
 # Route de prédiction
 @app.route('/predict', methods=['POST'])
 def predict():
-    data = request.get_json()
-
     try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': "Aucune donnée fournie."}), 400
+
         # Prétraiter les données
         processed_data = preprocess_data(data)
         
         # Effectuer la prédiction des probabilités
         y_pred_proba = model.predict_proba(processed_data)[:, 1]
 
-        # Utiliser le seuil optimal fourni pour le score métier
+        # Utiliser le seuil optimal pour le score métier
         best_threshold = 0.4000
         
-        # Calculer la prédiction binaire en fonction du meilleur seuil
+        # Calculer la prédiction binaire
         y_pred_bin = (y_pred_proba >= best_threshold).astype(int)
         
-        # Retourner uniquement la probabilité et la prédiction
+        # Construire la réponse
         response = {
             'prediction': int(y_pred_bin[0]),
             'probability': float(y_pred_proba[0])
@@ -145,8 +138,8 @@ def predict():
         return jsonify(response)
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({'error': f"Une erreur s'est produite : {str(e)}"}), 500
 
-
+# Lancer l'application
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=True)
