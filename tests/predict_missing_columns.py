@@ -4,7 +4,7 @@ import json
 # Test des données manquantes
 @pytest.fixture
 def client():
-    from api.app import app  # Importez votre application Flask
+    from api.app import app 
     with app.test_client() as client:
         yield client
 
