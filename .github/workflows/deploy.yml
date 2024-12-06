@@ -34,13 +34,13 @@ jobs:
       # Exécuter les tests
       - name: Run tests
         run: |
-          pytest  # Si vous utilisez Python avec pytest
+          pytest  #  Python avec pytest
 
       # Configurez Git pour utiliser Heroku comme distant
       - name: Set up Heroku remote
         run: git remote add heroku https://git.heroku.com/project-science-free.git
 
-      # Authentifiez-vous auprès de Heroku en utilisant votre clé API
+      # Authentification auprès de Heroku en utilisant votre clé API
       - name: Authenticate with Heroku
         run: |
           echo "machine git.heroku.com" >> ~/.netrc
